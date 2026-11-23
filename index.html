@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mon suivi 74 → 65 kg</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f2f4f9;--card:#fff;--tx:#1b2240;--mu:#6b7390;--ac:#4a4fd8;--ac2:#e8e9fb;--ok:#1b9a86;--warn:#d9822b;--bd:#e3e6f0;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#10142a;--card:#1a2040;--tx:#eef0fb;--mu:#98a0c4;--ac:#8d92ff;--ac2:#2a3166;--ok:#4cd0b9;--warn:#f0a458;--bd:#2c3460;color-scheme:dark}}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 "DM Sans",system-ui,sans-serif;padding-bottom:84px}
+main{max-width:560px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 14px}h2{font-size:17px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:14px}
+.mu{color:var(--mu);font-size:14px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mu);font:inherit;font-size:13px;padding:10px 2px;border-radius:10px}
+nav button.on{color:var(--ac);background:var(--ac2);font-weight:700}
+input,select{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px;width:100%}
+.row{display:flex;gap:8px;margin-bottom:8px}.row>*{min-width:0}
+.btn{border:0;background:var(--ac);color:#fff;font:inherit;font-weight:700;border-radius:10px;padding:10px 16px;white-space:nowrap}
+.btn.g{background:var(--ac2);color:var(--ac)}
+.chip{display:inline-block;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:99px;padding:6px 12px;margin:0 6px 6px 0;font:inherit;font-size:13px}
+.ring{position:relative;width:190px;height:190px;margin:4px auto 10px}
+.ring b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:38px;line-height:1}
+.ring b span{font-size:13px;font-weight:400;color:var(--mu);margin-top:4px}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.li{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--bd)}
+.li button{border:0;background:none;color:var(--mu);font-size:18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid figure{margin:0}.grid img{width:100%;border-radius:12px;display:block}
+.grid figcaption{font-size:13px;color:var(--mu);display:flex;justify-content:space-between}
+.k{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}.k div{background:var(--bg);border-radius:12px;padding:10px 4px}
+.k b{display:block;font-size:20px}.k span{font-size:12px;color:var(--mu)}
+label{font-size:13px;color:var(--mu);display:block;margin-bottom:3px}
+ul{padding-left:18px;margin:6px 0}li{margin-bottom:4px}
+svg text{fill:var(--mu);font-size:10px}
+</style></head><body>
+<main><h1 id="t"></h1><div id="app"></div></main>
+<nav id="nav"></nav>
+<script>
+var KEY="suivi-minceur-v1",tab="jour",
+today=function(){return new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10)},
+D=function(a,b){return Math.round((new Date(b)-new Date(a))/864e5)},
+fr=function(d){return new Date(d+"T12:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"})},
+addDays=function(d,n){var x=new Date(d+"T12:00");x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)},
+S={p:{age:28,h:175,w:74,goal:65,start:today(),act:1.4,rate:0.5},weights:[],food:{},photos:[]};
+try{var raw=localStorage.getItem(KEY);if(raw)S=JSON.parse(raw)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert("Stockage plein : exporte une sauvegarde puis supprime d’anciennes photos.")}}
+function calc(){var p=S.p,bmr=10*p.w+6.25*p.h-5*p.age-161,tdee=bmr*p.act,
+kcal=Math.max(1500,Math.round((tdee-p.rate*7700/7)/10)*10),
+prot=Math.round(1.6*p.goal),fat=Math.round(kcal*.27/9),carb=Math.round((kcal-prot*4-fat*9)/4),
+weeks=Math.ceil((p.w-p.goal)/p.rate);
+return{bmr:Math.round(bmr),tdee:Math.round(tdee),kcal:kcal,prot:prot,fat:fat,carb:carb,weeks:weeks,end:addDays(p.start,weeks*7)}}
+function cur(){var l=S.weights.slice().sort(function(a,b){return a.d<b.d?-1:1}).pop();return l?l.w:S.p.w}
+function expected(){var p=S.p;return Math.max(p.goal,+(p.w-p.rate*Math.max(0,D(p.start,today()))/7).toFixed(1))}
+function go(t){tab=t;render()}
+function render(){
+var tabs=[["jour","Repas"],["poids","Poids"],["photos","Photos"],["plan","Plan"]];
+nav.innerHTML=tabs.map(function(x){return'<button class="'+(tab==x[0]?"on":"")+'" onclick="go(\''+x[0]+'\')">'+x[1]+'</button>'}).join("");
+var T={jour:vJour,poids:vPoids,photos:vPhotos,plan:vPlan};
+t.textContent={jour:"Aujourd’hui",poids:"Mon poids",photos:"Mes photos",plan:"Mon plan"}[tab];
+app.innerHTML=T[tab]()}
+var PRE=[["Œuf",70,6],["Poulet 100 g",165,31],["Riz cuit 100 g",130,3],["Banane",90,1],["Yaourt grec 150 g",100,15],["Pain complet 1 tr.",90,4],["Saumon 100 g",200,20],["Pommes de terre 150 g",115,3],["Pâtes cuites 100 g",160,6],["Huile d’olive 1 càc",45,0],["Shaker protéiné",120,25],["Fruit",70,1]];
+function vJour(){var c=calc(),d=today(),L=S.food[d]||[],k=0,pr=0;
+L.forEach(function(e){k+=e.k;pr+=e.p});
+var pct=Math.min(1,k/c.kcal),R=82,C=2*Math.PI*R,over=k>c.kcal,left=c.kcal-k;
+var ring='<div class="ring"><svg viewBox="0 0 190 190" width="190" height="190"><circle cx="95" cy="95" r="'+R+'" fill="none" stroke="var(--bd)" stroke-width="14"/><circle cx="95" cy="95" r="'+R+'" fill="none" stroke="'+(over?"var(--warn)":"var(--ac)")+'" stroke-width="14" stroke-linecap="round" stroke-dasharray="'+(C*pct)+' '+C+'" transform="rotate(-90 95 95)"/></svg><b>'+Math.abs(left)+'<span>kcal '+(over?"au-dessus":"restantes")+'</span></b></div>';
+var chips=PRE.map(function(x,i){return'<button class="chip" onclick="quick('+i+')">'+x[0]+'</button>'}).join("");
+return'<div class="card">'+ring+'<div class="mu" style="text-align:center">'+k+' / '+c.kcal+' kcal</div><div style="margin-top:12px" class="mu">Protéines : '+pr+' / '+c.prot+' g</div><div class="bar"><i style="width:'+Math.min(100,pr/c.prot*100)+'%"></i></div></div>'+
+'<div class="card"><h2>Ajouter un aliment</h2><div class="row"><input id="fn" placeholder="Aliment"></div><div class="row"><input id="fk" type="number" inputmode="numeric" placeholder="kcal"><input id="fp" type="number" inputmode="numeric" placeholder="Prot. (g)"><button class="btn" onclick="addF()">Ajouter</button></div><div class="mu" style="margin:8px 0">Ajout rapide</div>'+chips+'</div>'+
+'<div class="card"><h2>Journal du jour</h2>'+(L.length?L.map(function(e,i){return'<div class="li"><span>'+esc(e.n)+'<div class="mu">'+e.k+' kcal · '+e.p+' g prot.</div></span><button onclick="delF('+i+')" aria-label="Supprimer">✕</button></div>'}).join(""):'<div class="mu">Rien d’ajouté. Note ton premier repas ci-dessus.</div>')+'</div>'}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function pushF(n,k,p){var d=today();(S.food[d]=S.food[d]||[]).push({n:n,k:k,p:p});save();render()}
+function quick(i){pushF(PRE[i][0],PRE[i][1],PRE[i][2])}
+function addF(){var n=fn.value.trim()||"Aliment",k=parseInt(fk.value),p=parseInt(fp.value)||0;if(!(k>=0)){fk.focus();return}pushF(n,k,p)}
+function delF(i){S.food[today()].splice(i,1);save();render()}
+function chart(){var p=S.p,c=calc(),W=320,H=190,m=30,tot=Math.max(c.weeks*7,1),
+pts=S.weights.slice().sort(function(a,b){return a.d<b.d?-1:1}).map(function(x){return[D(p.start,x.d),x.w]});
+pts.unshift([0,p.w]);var maxX=Math.max(tot,pts[pts.length-1][0]),lo=Math.min(p.goal,Math.min.apply(0,pts.map(function(a){return a[1]})))-1,hi=p.w+1;
+var X=function(v){return m+v/maxX*(W-m-8)},Y=function(v){return 8+(hi-v)/(hi-lo)*(H-8-22)};
+var line=pts.map(function(a,i){return(i?"L":"M")+X(a[0]).toFixed(1)+" "+Y(a[1]).toFixed(1)}).join("");
+var g="";for(var v=Math.ceil(lo);v<=hi;v+=2){g+='<line x1="'+m+'" x2="'+(W-8)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--bd)"/><text x="2" y="'+(Y(v)+3)+'">'+v+'</text>'}
+return'<svg viewBox="0 0 '+W+' '+H+'" width="100%">'+g+'<path d="M'+X(0)+' '+Y(p.w)+'L'+X(tot)+' '+Y(p.goal)+'" stroke="var(--mu)" stroke-dasharray="4 4" fill="none"/><path d="'+line+'" stroke="var(--ac)" stroke-width="3" fill="none" stroke-linejoin="round"/>'+pts.map(function(a){return'<circle cx="'+X(a[0])+'" cy="'+Y(a[1])+'" r="3.5" fill="var(--ac)"/>'}).join("")+'<text x="'+m+'" y="'+(H-4)+'">'+fr(p.start)+'</text><text x="'+(W-8)+'" y="'+(H-4)+'" text-anchor="end">'+fr(c.end)+'</text></svg>'}
+function vPoids(){var p=S.p,w=cur(),lost=(p.w-w).toFixed(1),rest=(w-p.goal).toFixed(1),e=expected(),diff=(w-e).toFixed(1);
+var st=diff<=0.3?'<span style="color:var(--ok)">dans les temps</span>':'<span style="color:var(--warn)">'+diff+' kg au-dessus du rythme</span>';
+var L=S.weights.slice().sort(function(a,b){return a.d<b.d?1:-1});
+return'<div class="card"><div class="k"><div><b>'+w+'</b><span>kg actuel</span></div><div><b>−'+lost+'</b><span>kg perdus</span></div><div><b>'+rest+'</b><span>kg restants</span></div></div><p class="mu" style="margin:12px 0 0">Objectif de la semaine : '+e+' kg · '+st+'</p></div>'+
+'<div class="card"><h2>Courbe (pointillés : rythme idéal)</h2>'+chart()+'</div>'+
+'<div class="card"><h2>Nouvelle pesée</h2><div class="row"><input id="wv" type="number" step="0.1" inputmode="decimal" placeholder="kg, ex. 73.4"><input id="wd" type="date" value="'+today()+'"><button class="btn" onclick="addW()">Ajouter</button></div><p class="mu">Pèse-toi 1 fois par semaine, le même jour, au réveil.</p>'+
+L.map(function(x){return'<div class="li"><span>'+fr(x.d)+'</span><span><b>'+x.w+' kg</b> <button onclick="delW(\''+x.d+'\')" aria-label="Supprimer">✕</button></span></div>'}).join("")+'</div>'}
+function addW(){var v=parseFloat(wv.value.replace(",","."));if(!(v>30&&v<250)){wv.focus();return}S.weights=S.weights.filter(function(x){return x.d!=wd.value});S.weights.push({d:wd.value,w:v});save();render()}
+function delW(d){S.weights=S.weights.filter(function(x){return x.d!=d});save();render()}
+function vPhotos(){var P=S.photos.slice().sort(function(a,b){return a.d<b.d?-1:1}),cmp="";
+if(P.length>1){var a=P[0],b=P[P.length-1];cmp='<div class="card"><h2>Avant / maintenant</h2><div class="grid"><figure><img src="'+a.img+'" alt="">'+cap(a)+'</figure><figure><img src="'+b.img+'" alt="">'+cap(b)+'</figure></div></div>'}
+return'<div class="card"><h2>Ajouter une photo</h2><p class="mu">Toutes les 2 semaines : même lumière, même endroit, même tenue. Les photos restent sur ton téléphone.</p><input id="pf" type="file" accept="image/*" onchange="addP(this)"></div>'+cmp+
+'<div class="card"><h2>Toutes les photos</h2>'+(P.length?'<div class="grid">'+P.map(function(x){return'<figure><img src="'+x.img+'" alt="">'+cap(x,1)+'</figure>'}).join("")+'</div>':'<div class="mu">Aucune photo pour l’instant.</div>')+'</div>'}
+function cap(x,del){return'<figcaption><span>'+fr(x.d)+(x.w?' · '+x.w+' kg':'')+'</span>'+(del?'<button style="border:0;background:none;color:var(--mu)" onclick="delP(\''+x.id+'\')">✕</button>':'')+'</figcaption>'}
+function addP(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);S.photos.push({id:String(Date.now()),d:today(),w:cur(),img:c.toDataURL("image/jpeg",.7)});save();render()};im.src=r.result};r.readAsDataURL(f)}
+function delP(id){S.photos=S.photos.filter(function(x){return x.id!=id});save();render()}
+function vPlan(){var c=calc(),p=S.p;
+function f(k,l,s){return'<div style="flex:1"><label>'+l+'</label><input type="number" step="'+(s||1)+'" value="'+p[k]+'" onchange="setP(\''+k+'\',this.value)"></div>'}
+return'<div class="card"><h2>Ton programme</h2><div class="k"><div><b>'+c.kcal+'</b><span>kcal / jour</span></div><div><b>'+c.weeks+'</b><span>semaines</span></div><div><b>'+fr(c.end)+'</b><span>objectif</span></div></div>'+
+'<div class="k" style="margin-top:8px"><div><b>'+c.prot+' g</b><span>protéines</span></div><div><b>'+c.carb+' g</b><span>glucides</span></div><div><b>'+c.fat+' g</b><span>lipides</span></div></div>'+
+'<p class="mu">Métabolisme de base ≈ '+c.bmr+' kcal, dépense totale ≈ '+c.tdee+' kcal. Déficit modéré d’environ '+Math.round(p.rate*1100)+' kcal/jour pour perdre ~'+p.rate+' kg par semaine, soit un rythme durable qui préserve le muscle.</p></div>'+
+'<div class="card"><h2>Semaine type</h2><ul><li><b>Hyrox</b> 1×/semaine : repas riche en glucides avant, protéines après.</li><li><b>Pilates</b> 1×/semaine.</li><li><b>Marche</b> : viser 8 000 à 10 000 pas/jour (c’est ce qui fait la différence).</li><li><b>Renfo</b> : ajouter 1 séance de musculation légère si possible.</li><li><b>Sommeil</b> 7 à 8 h et 2 L d’eau par jour.</li></ul></div>'+
+'<div class="card"><h2>Repères</h2><ul><li>Des protéines à chaque repas (œufs, poulet, poisson, skyr, légumineuses).</li><li>Moitié d’assiette de légumes, féculents en portion de la taille d’un poing.</li><li>Une pause d’une semaine à ~'+c.tdee+' kcal toutes les 6 à 8 semaines aide à tenir.</li><li>Si la perte dépasse 1 kg/semaine ou si la fatigue s’installe, augmenter les calories.</li><li>Objectif visé : IMC ≈ '+(p.goal/Math.pow(p.h/100,2)).toFixed(1)+' (zone saine).</li></ul><p class="mu">Ces chiffres sont des estimations. Avis d’un médecin ou d’un diététicien conseillé avant de commencer.</p></div>'+
+'<div class="card"><h2>Réglages</h2><div class="row">'+f("age","Âge")+f("h","Taille (cm)")+'</div><div class="row">'+f("w","Poids départ (kg)",.1)+f("goal","Objectif (kg)",.1)+'</div><div class="row"><div style="flex:1"><label>Activité</label><select onchange="setP(\'act\',this.value)">'+[[1.3,"Faible"],[1.4,"Modérée (2 séances + marche)"],[1.5,"Active"]].map(function(o){return'<option value="'+o[0]+'"'+(p.act==o[0]?" selected":"")+'>'+o[1]+'</option>'}).join("")+'</select></div><div style="flex:1"><label>Rythme</label><select onchange="setP(\'rate\',this.value)">'+[[.4,"0,4 kg/sem. (doux)"],[.5,"0,5 kg/sem."],[.6,"0,6 kg/sem."]].map(function(o){return'<option value="'+o[0]+'"'+(p.rate==o[0]?" selected":"")+'>'+o[1]+'</option>'}).join("")+'</select></div></div><div class="row"><div style="flex:1"><label>Date de début</label><input type="date" value="'+p.start+'" onchange="setP(\'start\',this.value,1)"></div></div>'+
+'<div class="row"><button class="btn g" onclick="exp()">Exporter</button><label class="btn g" style="margin:0">Importer<input type="file" accept=".json" hidden onchange="imp(this)"></label></div></div>'}
+function setP(k,v,s){S.p[k]=s?v:parseFloat(v);save();render()}
+function exp(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="suivi-"+today()+".json";a.click()}
+function imp(i){var f=i.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{S=JSON.parse(r.result);save();render()}catch(e){alert("Fichier invalide.")}};r.readAsText(f)}
+save();render();
+</script></body></html>
